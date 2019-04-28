@@ -1,10 +1,9 @@
 package br.com.avinfo.avboleto.routes.sql;
 
-import static br.com.avinfo.avboleto.sql.Queries.FIND_IDS_INTEGRACAO_BOLETOS_BY_SITUACAO;
-import static br.com.avinfo.avboleto.sql.Queries.FIND_IDS_INTEGRACAO_BOLETOS_BY_SITUACAO_AND_IDS;
+import static br.com.avinfo.avboleto.dto.EComandoStatus.ERRO;
+import static br.com.avinfo.avboleto.sql.Queries.FIND_BOLETOS;
 import static br.com.avinfo.avboleto.sql.Queries.INSERT_BOLETO_PROTOCOLO;
 import static br.com.avinfo.avboleto.sql.Queries.UPDATE_BOLETO_PROTOCOLO_PDF;
-import static br.com.avinfo.avboleto.sql.Queries.UPDATE_COMANDO_STATUS;
 import static br.com.avinfo.avboleto.sql.Queries.UPDATE_STATUS_BOLETO_BY_IDS;
 import static br.com.avinfo.avboleto.sql.Queries.UPDATE_STATUS_BOLETO_BY_NUMERO_DOCUMENTO;
 import static br.com.avinfo.avboleto.sql.Queries.UPDATE_STATUS_BOLETO_PROTOCOLO_BY_IDS;
@@ -31,7 +30,7 @@ public class BoletoSqlRoute extends RouteBuilder {
 		
 		from("direct:db-consulta-boletos-status-pendente")
 			.routeId("db-consulta-boletos-status-pendente")
-			.to("sql:" + Queries.FIND_BOLETOS + "?dataSourceRef=dataSource&outputType=StreamList")
+			.to("sql:" + FIND_BOLETOS + "?dataSourceRef=dataSource&outputType=StreamList")
 			.process(boletoProcessor)
 		.end();
 		
@@ -82,7 +81,8 @@ public class BoletoSqlRoute extends RouteBuilder {
 						.setProperty("mensagem", simple("Erros: ${body[_erros]}"))
 						.setProperty("numeroDocumento", simple("${body[TituloNumeroDocumento]}"))
 						.setProperty("nossoNumero", simple("${body[TituloNossoNumero]}"))
-						.setHeader("ids_filtrados", method(this, "getIdsFiltrados"))
+						.setHeader("ids_filtrados", method(boletoProcessor, "getIdsFiltrados"))
+						.setHeader("comando-status", constant(ERRO.getStatus()))
 						.to("direct:db-update-status-boleto-by-ids")
 		.end();
 						
@@ -101,16 +101,16 @@ public class BoletoSqlRoute extends RouteBuilder {
 		
 		from("direct:db-consulta-boletos-status-emitidos-by-ids-filtrados")
 			.routeId("db-consulta-boletos-status-emitidos-by-ids-filtrados")
-			.setHeader("ids_filtrados", method(this, "getIdsFiltrados"))
+			.setHeader("ids_filtrados", method(boletoProcessor, "getIdsFiltrados"))
 			.setProperty("situacaoId", method(EhBoletoSituacao.EMITIDO, "getSituacaoId"))
 			.choice()
-				.when(simple("${header.IdsFiltrados} != null or ${header.IdsFiltrados} == ''"))
-					.to("sql:" + FIND_IDS_INTEGRACAO_BOLETOS_BY_SITUACAO_AND_IDS + "?dataSourceRef=dataSource")
+				.when(simple("${header.ids_filtrados} != null or ${header.ids_filtrados} != ''"))
+					.to("sql:" + Queries.FIND_IDS_INTEGRACAO_BOLETOS_DIF_ERRO + "?dataSourceRef=dataSource")
 					.process(this::idsIntegracaoProcess)
-				.otherwise()
-					.to("sql:" + FIND_IDS_INTEGRACAO_BOLETOS_BY_SITUACAO + "?dataSourceRef=dataSource")
-					.process(this::idsIntegracaoProcess)
-					.process(ex -> boletoProcessor.setIdsFiltrados(ex.getIn().getBody(String.class)))
+//				.otherwise()
+//					.to("sql:" + FIND_IDS_INTEGRACAO_BOLETOS_BY_SITUACAO + "?dataSourceRef=dataSource")
+//					.process(this::idsIntegracaoProcess)
+//					.process(ex -> boletoProcessor.setIdsFiltrados(ex.getIn().getBody(String.class)))
 		.end();
 		
 		
@@ -126,8 +126,7 @@ public class BoletoSqlRoute extends RouteBuilder {
 			.routeId("db-update-protocolo-boletostatus")
 			.choice()
 				.when(simple("${body[_status]} == 'sucesso'"))
-					.log("ENTROU AQUI")
-				    .setHeader("ids_filtrados", method(this, "getIdsFiltrados"))
+					.setHeader("ids_filtrados", method(boletoProcessor, "getIdsFiltrados"))
 				    .setProperty("situacao", constant("PROTOCOLADO"))
 				    .setProperty("mensagem", simple("${body[_mensagem]}"))
 				    .setProperty("situacaoId", method(EhBoletoSituacao.PROTOCOLADO, "getSituacaoId"))
@@ -140,7 +139,7 @@ public class BoletoSqlRoute extends RouteBuilder {
 			.routeId("db-update-protocolo-boleto-erro")
 			.choice()
 				.when(simple("${body[_status]} == 'erro'"))
-					.setHeader("ids_filtrados", method(this, "getIdsFiltrados"))
+					.setHeader("ids_filtrados", method(boletoProcessor, "getIdsFiltrados"))
 				    .setProperty("situacao", constant("FALHA"))
 				    .setProperty("mensagem", simple("${body[_mensagem]}"))
 				    .setProperty("situacaoId", method(EhBoletoSituacao.FALHA, "getSituacaoId"))
@@ -155,15 +154,9 @@ public class BoletoSqlRoute extends RouteBuilder {
 			.choice()
 				.when(simple("${body} is 'java.lang.byte[]'"))
 					.to("sql:" + UPDATE_BOLETO_PROTOCOLO_PDF + "?dataSourceRef=dataSource")
-					.to("file://out?fileName=pdf.pdf")
+//					.to("file://out?fileName=pdf.pdf")
 		.end();
 					
-		
-		from("direct:db-update-comando-status")
-			.routeId("db-update-comando-status")
-			.to("sql:" + UPDATE_COMANDO_STATUS + "?dataSourceRef=dataSource")
-		.end();
-		
 	}
 	
 	private void idsIntegracaoProcess(Exchange exchange) {

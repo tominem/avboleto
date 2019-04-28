@@ -1,5 +1,8 @@
 package br.com.avinfo.avboleto.routes;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.ProducerTemplate;
@@ -8,7 +11,6 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.DisableJmx;
-import org.apache.camel.test.spring.MockEndpoints;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,9 +29,12 @@ public class CadastroBoletoRouteTest {
 	private CamelContext camelContext;
 	
 	@EndpointInject(uri = "direct:look-up-comandos")
-	private ProducerTemplate endpoint;
+	private ProducerTemplate lookUpComandos;
+
+	@EndpointInject(uri = "direct:insere-boleto-comando-db")
+	private ProducerTemplate insereBoletoComando;
 	
-	@EndpointInject(uri = "mock:direct:cadastro-convenio")
+	@EndpointInject(uri = "mock:dead")
 	private MockEndpoint mock;
 
 	@Before
@@ -46,10 +51,15 @@ public class CadastroBoletoRouteTest {
 
 	@Test
 	public void shouldSucceed() throws Exception {
-//		mock.expectedMessageCount(1);
-		endpoint.sendBody("");
+		Map<String, Object> params = new HashMap<>();
+		params.put("comando", "incluir-boleto");
+		params.put("param1", "999127");
+		params.put("status", 1);
 		
-//		mock.assertIsSatisfied();		
+		insereBoletoComando.sendBody(params);
+		lookUpComandos.sendBody("");
+		
+		mock.assertIsSatisfied();	
 	}
 
 }

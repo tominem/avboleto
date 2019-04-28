@@ -11,7 +11,6 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.DisableJmx;
-import org.apache.camel.test.spring.MockEndpoints;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,8 +25,7 @@ import org.springframework.test.context.ActiveProfiles;
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 @DisableJmx(true)
 @ActiveProfiles(value="test")
-@MockEndpoints("direct:end")
-public class CadastroCedenteRouteTest {
+public class CadastroConvenioRouteTest {
 	
 	@Autowired
 	private CamelContext camelContext;
@@ -55,14 +53,17 @@ public class CadastroCedenteRouteTest {
 
 	@Test
 	public void shouldSucceed() throws Exception {
+		mock.expectedMessageCount(1);
+		
 		Map<String, Object> params = new HashMap<>();
-		params.put("comando", "cadastrar-cedente");
+		params.put("comando", "cadastrar-convenio");
+		params.put("param1", 1);
 		params.put("status", 1);
 		
 		insereBoletoComando.sendBody(params);
 		lookUpComandos.sendBody("");
 		
-		mock.assertIsSatisfied();	
+		mock.assertIsSatisfied();		
 	}
 
 }

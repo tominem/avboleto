@@ -1,32 +1,30 @@
 package br.com.avinfo.avboleto.routes;
 
+import static br.com.avinfo.avboleto.sql.Queries.FIND_CEDENTE;
+
 import java.util.List;
 import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.http4.HttpMethods;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.springframework.stereotype.Component;
 
+import br.com.avinfo.avboleto.base.HttpBaseRouteBuilder;
 import br.com.avinfo.avboleto.dto.CedenteReqDTO;
 
 @Component
-public class CadastroCedenteRoute extends RouteBuilder {
+public class CadastroCedenteRoute extends HttpBaseRouteBuilder {
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public void configure() throws Exception {
 		
-		from("direct:cadastro-cedente")
-			.routeId("cadastro-cedente")
-			.to("sql:{{find-cedente}}?dataSourceRef=dataSource")
+		from("direct:cadastrar-cedente")
+			.routeId("cadastrar-cedente")
+			.to("sql:"+ FIND_CEDENTE +"?dataSourceRef=dataSource")
 			.choice()
-				.when(simple("${body.size()} > 0 && ${body[0][ext_id]} != null"))
-					.to("direct:cadastro-convenio")
-					.endChoice()
-				.otherwise()
+				.when(simple("${body.size()} > 0"))
 					.process(new Processor() {
 						
 						private Map<String, Object> map;
@@ -72,33 +70,15 @@ public class CadastroCedenteRoute extends RouteBuilder {
 				.endChoice()
 			.end();
 		
+		cadastroCedenteWS();
+		
 	}
 
-	public void updateCodigoClienteById() {
-		from("direct:update-codigo-cedente-id")
-			.to("sql:UPDATE controle SET ext_id = :#${body[_dados][id]}?dataSourceRef=dataSource");
-	}
-
-	public void cadastroCedente() {
-		from("direct:ws-cadastro-cedente")
-			.routeId("ws-cadastro-cedente")
-			.setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
-			.setHeader("cnpj-sh", simple("{{tecnosped.boleto.api.cnpjsh}}"))
-			.setHeader("token-sh", simple("{{tecnosped.boleto.api.tokensh}}"))
-			.setHeader(Exchange.HTTP_METHOD, HttpMethods.POST)
-			.to("http4://{{tecnosped.boleto.api.host}}/v{{tecnosped.boleto.api.version}}/cedentes?throwExceptionOnFailure=false")
-			.unmarshal()
-			.json(JsonLibrary.Jackson)
-			.choice()
-				.when(simple("${body[_status]} == 'sucesso'"))
-					.log("status: ${body[_status]}, dados: ${body[_dados]}")
-					.to("direct:update-codigo-cedente-id")
-					.endChoice()
-				.otherwise()
-					.log("status: ${body[_status]}, erros: ${body[_dados]}")
-					.endChoice()
-			.end()
-			.to("direct:cadastro-convenio");
+	public void cadastroCedenteWS() {
+		
+		reqPostJson("ws-cadastro-cedente", "cedentes")
+			.to("direct:send-comando-retorno");
+		
 	}
 
 }
