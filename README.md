@@ -87,7 +87,7 @@ spring.datasource.username=user
 spring.datasource.password=password
 
 #host principal da api plugboleto (versão de testes)
-# para produção deve-se utilizado o host de produção (plugboleto.com.br/api/v1/boletos/lote)
+# para produção deve-se utilizado o host de produção (plugboleto.com.br/api)
 tecnosped.boleto.api.host=homologacao.plugboleto.com.br/api
 
 #versao da api plugboleto
