@@ -108,6 +108,14 @@ habilitar.https=false
 	
 ```
 
+## Rodando a aplicação 
+
+Selecione a mesma pasta onde contenham o arquivo jar principal avboleto-0.0.1-SNAPSHOT.jar e o application.properties e execute o comando:
+
+```bash
+    java -jar avboleto-0.0.1-SNAPSHOT.jar
+```
+
 
 
 
