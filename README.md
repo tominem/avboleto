@@ -102,7 +102,7 @@ tecnosped.boleto.api.tokensh=f22b97c0c9a3d41ac0a3875aba69e5aa
 #periodo de carredura do sistema avboleto, varredura na tabela boletocomando para disparo dos comandos
 periodo.varredura.seg=5
 
-#flag que indica qual protocolo usar (true=http, false=https), quando o sistema for utilizado em produção 
+#flag que indica qual protocolo usar (true=https, false=http), quando o sistema for utilizado em produção 
 #deve-se utilizar esse parâmetro como true
 habilitar.https=false
 	
