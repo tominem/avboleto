@@ -73,9 +73,9 @@ O sistema necessita da criação de um arquivo de configuração externo, para i
 
 Esse arquivo deve ser salvo na mesma pasta em que o jar da aplicação se encontra, com o nome **application.properties**
 
-##Seguem os parâmetros:
+#### Seguem os parâmetros:
 
-```java
+```Properties
 
 #url de conexao com banco de dados
 spring.datasource.url=jdbc:mysql://localhost/avinfoloja
