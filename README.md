@@ -80,7 +80,7 @@ Esse arquivo deve ser salvo na mesma pasta em que o jar da aplicação se encont
 #url de conexao com banco de dados
 spring.datasource.url=jdbc:mysql://localhost/avinfoloja
 
-#senha banco de dados
+#usuario banco de dados
 spring.datasource.username=user
 
 #senha banco de dados
