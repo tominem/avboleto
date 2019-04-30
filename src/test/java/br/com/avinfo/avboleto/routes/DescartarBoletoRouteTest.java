@@ -5,10 +5,12 @@ import java.util.Map;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
+import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.model.RouteDefinition;
+import org.apache.camel.processor.aggregate.AggregationStrategy;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.DisableJmx;
 import org.junit.Before;
@@ -24,8 +26,8 @@ import org.springframework.test.context.ActiveProfiles;
 @SpringBootTest
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 @DisableJmx(true)
-@ActiveProfiles("test")
-public class CadastroBoletoRouteTest {
+@ActiveProfiles(value="test")
+public class DescartarBoletoRouteTest {
 	
 	@Autowired
 	private CamelContext camelContext;
@@ -33,23 +35,46 @@ public class CadastroBoletoRouteTest {
 	@EndpointInject(uri = "direct:look-up-comandos")
 	private ProducerTemplate lookUpComandos;
 
-	@EndpointInject(uri = "direct:insere-status-boleto")
-	private ProducerTemplate insereStatusBoleto;
-
-	@EndpointInject(uri = "direct:delete-status-boleto")
-	private ProducerTemplate deleteBoletoComando;
-
-	@EndpointInject(uri = "direct:delete-boleto-protocolo")
-	private ProducerTemplate deleteBoletoProtocolo;
-	
 	@EndpointInject(uri = "direct:insere-boleto-comando-db")
 	private ProducerTemplate insereBoletoComando;
+
+	@EndpointInject(uri = "direct:find-last-ids-integracao")
+	private ProducerTemplate findLastTwoIdsIntegracao;
 	
 	@EndpointInject(uri = "mock:dead")
 	private MockEndpoint mock;
 
 	@Before
 	public void setUp() throws Exception {
+		camelContext.addRoutes(new RouteBuilder() {
+			
+			@Override
+			public void configure() throws Exception {
+				from("direct:find-last-ids-integracao")
+				.routeId("find-last-ids-integracao")
+				.to("sql:SELECT id_integracao FROM statusboleto limit 2")
+				.split(simple("${body}"), new AggregationStrategy() {
+					
+					StringBuffer sb;
+					
+					@Override
+					public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
+						if (oldExchange == null) {
+							sb = new StringBuffer();
+							sb.append(newExchange.getIn().getBody(Map.class).get("id_integracao"));
+							newExchange.getIn().setBody(sb);
+							return newExchange;
+						} else {
+							sb = oldExchange.getIn().getBody(StringBuffer.class);
+							sb.append(";").append(newExchange.getIn().getBody(Map.class).get("id_integracao"));
+							return oldExchange;
+						}
+					}
+				}).log("${body}");
+				
+			}
+		});
+		
 		RouteDefinition definition = camelContext.getRouteDefinitions().get(0);
 		definition.adviceWith(camelContext, new RouteBuilder() {
 			@Override
@@ -62,25 +87,19 @@ public class CadastroBoletoRouteTest {
 
 	@Test
 	public void shouldSucceed() throws Exception {
-		deleteBoletoComando.sendBody("");
-		deleteBoletoProtocolo.sendBody("");
+		mock.expectedMessageCount(1);
 		
-		Map<String, Object> params1 = new HashMap<>();
-		params1.put("comando", "incluir-boleto");
-		params1.put("param1", "999124");
-		params1.put("status", 1);
+		StringBuffer idsIntegracao = (StringBuffer) findLastTwoIdsIntegracao.requestBody("");
 		
-		Map<String, Object> params2 = new HashMap<>();
-		params2.put("comando", "incluir-boleto");
-		params2.put("param1", "999125");
-		params2.put("status", 1);
+		Map<String, Object> params = new HashMap<>();
+		params.put("comando", "descartar-boleto");
+		params.put("param1", idsIntegracao);
+		params.put("status", 1);
 		
-		insereStatusBoleto.sendBody("9;10");
-		insereBoletoComando.sendBody(params1);
-		insereBoletoComando.sendBody(params2);
+		insereBoletoComando.sendBody(params);
 		lookUpComandos.sendBody("");
 		
-		mock.assertIsSatisfied();	
+		mock.assertIsSatisfied();
 	}
 
 }

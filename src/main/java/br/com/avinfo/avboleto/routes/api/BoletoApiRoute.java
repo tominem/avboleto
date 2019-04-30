@@ -96,7 +96,7 @@ public class BoletoApiRoute extends RouteBuilder {
 					.setHeader(Exchange.HTTP_METHOD, HttpMethods.POST)
 					.log("[api-incluir-boleto]-requisicao-url: {{tecnosped.boleto.api.host}}/v{{tecnosped.boleto.api.version}}/boletos/lote")
 					.log("[api-incluir-boleto]-requisicao-ws-body: ${body}")
-					.to("http4://{{tecnosped.boleto.api.host}}/v{{tecnosped.boleto.api.version}}/boletos/lote?throwExceptionOnFailure=false")
+					.toF("%s://{{tecnosped.boleto.api.host}}/v{{tecnosped.boleto.api.version}}/boletos/lote?throwExceptionOnFailure=false", protocol())
 					.unmarshal()
 					.json(JsonLibrary.Jackson)
 					.log("[api-incluir-boleto]-retorno-ws-body: ${body}")

@@ -44,16 +44,14 @@ public class IncluirBoletoProcessor extends AvinfoSqlProcessor<BoletoReqDTO>{
 			
 			idsFiltrados += idsFiltrados.isEmpty() ? trim("BoletoId") : ("," + trim("BoletoId"));
 			
-			String conta = trim("CedenteContaNumero");
-			String contaDigito = conta.substring(conta.lastIndexOf("-")+1, conta.length());
 			String tituloDataEmissao = trim("TituloDataEmissao");
 			tituloDataEmissao = sdfOutput.format(sdfInput.parse(tituloDataEmissao));
 			String tituloDataVencimento = trim("TituloDataVencimento");
 			tituloDataVencimento = sdfOutput.format(sdfInput.parse(tituloDataVencimento));
 
 			BoletoReqDTO boletoReq = new BoletoReqDTO();
-			boletoReq.setCedenteContaNumero(conta != null ? conta.substring(0, conta.lastIndexOf("-")) : null);
-			boletoReq.setCedenteContaNumeroDV(contaDigito);
+			boletoReq.setCedenteContaNumero(trim("CedenteContaNumero"));
+			boletoReq.setCedenteContaNumeroDV(trim("CedenteContaNumeroDV"));
 			boletoReq.setCedenteConvenioNumero(trim("CedenteConvenioNumero"));
 			boletoReq.setCedenteContaCodigoBanco(trim("CedenteContaCodigoBanco"));
 			boletoReq.setSacadoCPFCNPJ(trim("SacadoCPFCNPJ"));

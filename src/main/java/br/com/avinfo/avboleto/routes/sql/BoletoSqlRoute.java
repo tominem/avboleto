@@ -156,6 +156,24 @@ public class BoletoSqlRoute extends RouteBuilder {
 					.to("sql:" + UPDATE_BOLETO_PROTOCOLO_PDF + "?dataSourceRef=dataSource")
 //					.to("file://out?fileName=pdf.pdf")
 		.end();
+		
+		
+		/**
+		 * Rota somente usada em testes unitarios
+		 */
+		from("direct:insere-status-boleto")
+			.routeId("insere-status-boleto")
+			.split(body().tokenize(";"))
+			.to("sql:INSERT INTO statusboleto (Id, Descricao, situacao) VALUES "
+					+ "(:#${body}, 'PENDENTE', 1)");
+		
+		from("direct:delete-status-boleto")
+			.routeId("delete-status-boleto")
+			.to("sql:DELETE FROM statusboleto");
+		
+		from("direct:delete-boleto-protocolo")
+			.routeId("delete-boleto-protocolo")
+			.to("sql:DELETE FROM boletoprotocolo");
 					
 	}
 	

@@ -21,7 +21,7 @@ public class Queries {
 			  "SELECT "
 			+ "   bol.id             BoletoId                  ,"      //retirar digito
 			+ "   cc.numcon30        CedenteContaNumero        ,"      //retirar digito
-			+ "   cc.numcon30        CedenteContaNumeroDV      ,"      //pegar somente digito
+			+ "   cc.digcon30        CedenteContaNumeroDV      ,"      //pegar somente digito
 			+ "   cv.CodBeneficiario CedenteConvenioNumero     ,"
 			+ "   ban.cod40           CedenteContaCodigoBanco   ," 
 			+ "   cli.cgcclie1       SacadoCPFCNPJ             ,"  

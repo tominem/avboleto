@@ -20,7 +20,9 @@ public enum EhBoletoSituacao {
 	
 	LIQUIDADO(8),
 	
-	BAIXADO(9);
+	BAIXADO(9), 
+	
+	DESCARTADO(10);
 	
 	private int situacaoId;
 	
