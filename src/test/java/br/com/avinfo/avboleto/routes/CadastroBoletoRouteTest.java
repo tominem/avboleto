@@ -1,3 +1,4 @@
+
 package br.com.avinfo.avboleto.routes;
 
 import java.util.HashMap;
@@ -41,6 +42,9 @@ public class CadastroBoletoRouteTest {
 
 	@EndpointInject(uri = "direct:delete-boleto-protocolo")
 	private ProducerTemplate deleteBoletoProtocolo;
+
+	@EndpointInject(uri = "direct:update-numero-conta-test")
+	private ProducerTemplate updateNumeroContaTest;
 	
 	@EndpointInject(uri = "direct:insere-boleto-comando-db")
 	private ProducerTemplate insereBoletoComando;
@@ -50,6 +54,17 @@ public class CadastroBoletoRouteTest {
 
 	@Before
 	public void setUp() throws Exception {
+		camelContext.addRoutes(new RouteBuilder() {
+			
+			@Override
+			public void configure() throws Exception {
+				
+				from("direct:update-numero-conta-test")
+					.to("sql:UPDATE conta30i SET numcon30 = CONCAT('0', CAST(numcon30 AS UNSIGNED) + 1), codBeneficiario30 = numcon30 WHERE sr_recno = 3");
+				
+			}
+		});
+		
 		RouteDefinition definition = camelContext.getRouteDefinitions().get(0);
 		definition.adviceWith(camelContext, new RouteBuilder() {
 			@Override
@@ -64,6 +79,19 @@ public class CadastroBoletoRouteTest {
 	public void shouldSucceed() throws Exception {
 		deleteBoletoComando.sendBody("");
 		deleteBoletoProtocolo.sendBody("");
+		updateNumeroContaTest.sendBody("");
+
+		Map<String, Object> contaParams = new HashMap<>();
+		contaParams.put("comando", "cadastrar-conta");
+		contaParams.put("param1", 3);
+		contaParams.put("status", 1);
+		insereBoletoComando.sendBody(contaParams);
+		
+		Map<String, Object> convenioParams = new HashMap<>();
+		convenioParams.put("comando", "cadastrar-convenio");
+		convenioParams.put("param1", 1);
+		convenioParams.put("status", 1);
+		insereBoletoComando.sendBody(convenioParams);
 		
 		Map<String, Object> params1 = new HashMap<>();
 		params1.put("comando", "incluir-boleto");

@@ -7,6 +7,7 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 import org.springframework.stereotype.Component;
 
 import br.com.avinfo.avboleto.base.HttpBaseRouteBuilder;
+import br.com.avinfo.avboleto.dto.EhBoletoSituacao;
 
 @Component
 public class DescartarBoletoRoute extends HttpBaseRouteBuilder {
@@ -27,10 +28,50 @@ public class DescartarBoletoRoute extends HttpBaseRouteBuilder {
 			.to("direct:ws-descartar-boleto");
 		
 		descartarBoletoWS()
-			.to("direct:send-comando-retorno");
+			.multicast()
+				.to("direct:update-decartar-sucesso")
+				.to("direct:update-decartar-falha")
+				.to("direct:send-comando-retorno");
+		
+		updateDescartarSucesso();
+		updateDescartarFalha();
 		
 	}
 	
+	private void updateDescartarSucesso() {
+		from("direct:update-decartar-sucesso")
+			.routeId("update-decartar-sucesso")
+			.choice()
+				.when(simple("${body[_dados][_sucesso].size()} > 0"))
+					.setHeader("situacao", constant(EhBoletoSituacao.DESCARTADO.getSituacaoId()))
+					.setHeader("descricao", constant(EhBoletoSituacao.DESCARTADO.name()))
+					.setHeader("sucessos", simple("${body[_dados][_sucesso]}"))
+					.split(header("sucessos")).streaming()
+						.setHeader("mensagem", simple("Descartado com sucesso: ${body}", String.class))
+						.setHeader("idIntegracao", simple("${body[idintegracao]}"))
+						.to("sql:UPDATE statusboleto SET situacao = :#${header.situacao}, "
+								+ "Descricao = :#${header.descricao}, mensagem = :#${header.mensagem} "
+								+ "WHERE id_integracao = :#${header.idIntegracao}")
+		.end();
+	}
+
+	private void updateDescartarFalha() {
+		from("direct:update-decartar-falha")
+		.routeId("update-decartar-falha")
+		.choice()
+			.when(simple("${body[_dados][_falha].size()} > 0"))
+				.setHeader("situacao", constant(EhBoletoSituacao.FALHA.getSituacaoId()))
+				.setHeader("descricao", constant(EhBoletoSituacao.FALHA.name()))
+				.setHeader("falhas", simple("${body[_dados][_falha]}"))
+				.split(header("falhas")).streaming()
+					.setHeader("mensagem", simple("${body}", String.class))
+					.setHeader("idIntegracao", simple("${body[idintegracao]}"))
+					.to("sql:UPDATE statusboleto SET situacao = :#${header.situacao}, "
+							+ "Descricao = :#${header.descricao}, mensagem = :#${header.mensagem} "
+							+ "WHERE id_integracao = :#${header.idIntegracao}")
+		.end();
+	}
+
 	private RouteDefinition descartarBoletoWS() {
 		return reqPostJson("ws-descartar-boleto", "boletos/descarta/lote");
 	}
