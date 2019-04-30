@@ -109,7 +109,7 @@ public class Queries {
 
 
 	public static final String FIND_COMMANDOS = 
-			"SELECT id, comando, param1 FROM boletocomando WHERE status = 1 order by id";
+			"SELECT id, comando, param1, param2 FROM boletocomando WHERE status = 1 order by id";
 
 
 	public static final String UPDATE_COMANDO_STATUS = 

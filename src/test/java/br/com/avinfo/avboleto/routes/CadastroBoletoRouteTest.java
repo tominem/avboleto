@@ -21,6 +21,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
 
+import br.com.avinfo.avboleto.dto.EhTipoImpressao;
+
 @RunWith(CamelSpringBootRunner.class)
 @SpringBootTest
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
@@ -96,11 +98,13 @@ public class CadastroBoletoRouteTest {
 		Map<String, Object> params1 = new HashMap<>();
 		params1.put("comando", "incluir-boleto");
 		params1.put("param1", "999124");
+		params1.put("param2", EhTipoImpressao.PDF_NORMAL.getCodigo());
 		params1.put("status", 1);
 		
 		Map<String, Object> params2 = new HashMap<>();
 		params2.put("comando", "incluir-boleto");
 		params2.put("param1", "999125");
+		params2.put("param2", EhTipoImpressao.PDF_CARNE.getCodigo());
 		params2.put("status", 1);
 		
 		insereStatusBoleto.sendBody("9;10");

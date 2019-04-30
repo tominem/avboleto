@@ -113,8 +113,11 @@ public class BoletoApiRoute extends RouteBuilder {
 	}
 	
 	private void solicitaBoletoProcess(Exchange exchange) {
+		
+		Integer tipoImpressao = exchange.getIn().getHeader("tipoImpressao", Integer.class);
+		
 		SolicitaPDFDTO dto = new SolicitaPDFDTO();
-		dto.setTipoImpressao("1");
+		dto.setTipoImpressao(tipoImpressao == null ? "0" : tipoImpressao.toString());
 		
 		String idsIntegracao = exchange.getIn().getBody(String.class);
 		for (String idIntegracao : idsIntegracao.split(",")) {

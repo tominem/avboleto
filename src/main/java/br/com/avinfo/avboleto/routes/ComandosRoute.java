@@ -94,7 +94,7 @@ public class ComandosRoute extends RouteBuilder {
 	private void insereComando() {
 		from("direct:insere-boleto-comando-db")
 			.routeId("insere-boleto-comando-db")
-			.to("sql:INSERT INTO boletocomando (comando, param1, status) VALUES (:#${body[comando]}, :#${body[param1]}, :#${body[status]})?dataSourceRef=dataSource");
+			.to("sql:INSERT INTO boletocomando (comando, param1, param2, status) VALUES (:#${body[comando]}, :#${body[param1]}, :#${body[param2]}, :#${body[status]})?dataSourceRef=dataSource");
 	}
 
 	private void sendComandoException() {
