@@ -118,7 +118,7 @@ Selecione a mesma pasta onde contenham o arquivo jar principal avboleto-0.0.1-SN
 
 ## Download do Release
 
-[versão beta](https://bitbucket.org/tominem/avboleto/downloads/avboleto-0.0.1-SNAPSHOT.jar.zip)
+[versão beta](https://bitbucket.org/tominem/avboleto/downloads/avboleto-0.0.2-SNAPSHOT.jar.zip)
 
 
 
