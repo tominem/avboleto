@@ -1,8 +1,11 @@
 package br.com.avinfo.avboleto.processor;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.camel.Exchange;
@@ -74,7 +77,7 @@ public class IncluirBoletoProcessor extends AvinfoSqlProcessor<BoletoReqDTO>{
 			boletoReq.setTituloMensagem03(trim("TituloMensagem03"));
 			boletoReq.setTituloNossoNumero(trim("TituloNossoNumero"));
 			boletoReq.setTituloNumeroDocumento(trim("TituloNumeroDocumento"));
-			boletoReq.setTituloValor(trim("TituloValor"));
+			boletoReq.setTituloValor(getCurrency());
 			boletoReq.setTituloLocalPagamento(trim("TituloLocalPagamento"));
 			
 			return boletoReq;
@@ -82,6 +85,14 @@ public class IncluirBoletoProcessor extends AvinfoSqlProcessor<BoletoReqDTO>{
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage(), e);
 		}
+	}
+
+	private String getCurrency() {
+		Locale.setDefault(new Locale("pt", "BR"));
+		String tituloValorStr = trim("TituloValor");
+		BigDecimal tituloValorBD = new BigDecimal(tituloValorStr);
+		String value = new DecimalFormat("##0.00").format(tituloValorBD);
+		return value;
 	}
 	
 	public String getIdsFiltrados() {
