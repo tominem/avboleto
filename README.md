@@ -113,12 +113,12 @@ habilitar.https=false
 Selecione a mesma pasta onde contenham o arquivo jar principal avboleto-0.0.1-SNAPSHOT.jar e o application.properties e execute o comando:
 
 ```bash
-    java -jar avboleto-0.0.4-SNAPSHOT.jar
+    java -jar avboleto-0.0.5-SNAPSHOT.jar
 ```
 
 ## Download do Release
 
-[versão beta](https://bitbucket.org/tominem/avboleto/downloads/avboleto-0.0.4-SNAPSHOT.jar.zip)
+[versão beta](https://bitbucket.org/tominem/avboleto/downloads/avboleto-0.0.5-SNAPSHOT.jar.zip)
 
 
 
