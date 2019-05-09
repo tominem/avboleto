@@ -14,21 +14,52 @@ public class CadastroConvenioRoute extends HttpBaseRouteBuilder {
 		
 		from("direct:cadastrar-convenio")
 			.routeId("cadastrar-convenio")
+			.setHeader("convenio-id", simple("${body[param1]}"))
 			.to("sql:" + FIND_CONVENIO + "?dataSourceRef=dataSource")
 			.setBody(simple("${body[0]}"))
 			.process("fromDatabaseToMap")
 			.marshal("myJsonFormat")
-			.to("direct:ws-cadastro-convenio");
+			.to("direct:ws-cadastrar-convenio");
 		
-		cadastroConvenioWS();
+		from("direct:alterar-convenio")
+			.routeId("alterar-convenio")
+			.setHeader("convenio-id", simple("${body[param1]}"))
+			.to("sql:" + FIND_CONVENIO + "?dataSourceRef=dataSource")
+			.setBody(simple("${body[0]}"))
+			.process("fromDatabaseToMap")
+			.setHeader("IdIntegracao", simple("${body[IdIntegracao]}"))
+			.marshal("myJsonFormat")
+			.to("direct:ws-alterar-convenio");
+		
+		cadastrarConvenioWS();
+		alterarConvenioWS();
+		
+		updateConvenioIdIntegracao();
 		
 	}
 
-	private void cadastroConvenioWS() {
-		
-		reqPostJson("ws-cadastro-convenio", "cedentes/contas/convenios")
-			.to("direct:send-comando-retorno");
-		
+	private void alterarConvenioWS() {
+		reqPutJson("ws-alterar-convenio", "cedentes/contas/convenios/${header.IdIntegracao}")
+			.multicast()
+				.to("direct:update-convenio-idIntegracao")
+				.to("direct:send-comando-retorno");
+	}
+
+	private void cadastrarConvenioWS() {
+		reqPostJson("ws-cadastrar-convenio", "cedentes/contas/convenios")
+			.multicast()
+				.to("direct:update-convenio-idIntegracao")
+				.to("direct:send-comando-retorno");
+	}
+	
+	private void updateConvenioIdIntegracao() {
+		from("direct:update-convenio-idIntegracao")
+			.routeId("update-convenio-idIntegracao")
+			.choice()
+				.when(simple("${body[_status]} == 'sucesso'"))
+					.to("sql:UPDATE convenio SET IdIntegracao = :#${body[_dados][id]} WHERE Id = :#${header.convenio-id}")
+			.end()
+		.end();
 	}
 
 }

@@ -5,7 +5,7 @@ import java.util.Locale;
 
 import org.junit.Test;
 
-public class DcimalFormatTest {
+public class DecimalFormatTest {
 	
 	@Test
 	public void test() {

@@ -55,12 +55,18 @@ public class CadastroConvenioRouteTest {
 	public void shouldSucceed() throws Exception {
 		mock.expectedMessageCount(1);
 		
-		Map<String, Object> params = new HashMap<>();
-		params.put("comando", "cadastrar-convenio");
-		params.put("param1", 1);
-		params.put("status", 1);
+		Map<String, Object> params1 = new HashMap<>();
+		params1.put("comando", "cadastrar-convenio");
+		params1.put("param1", 1);
+		params1.put("status", 1);
+
+		Map<String, Object> params2 = new HashMap<>();
+		params2.put("comando", "alterar-convenio");
+		params2.put("param1", 1);
+		params2.put("status", 1);
 		
-		insereBoletoComando.sendBody(params);
+		insereBoletoComando.sendBody(params1);
+		insereBoletoComando.sendBody(params2);
 		lookUpComandos.sendBody("");
 		
 		mock.assertIsSatisfied();		

@@ -150,8 +150,9 @@ public class Queries {
 			+  " Especie ConvenioEspecie, "
 			+  " PadraoCnab ConvenioPadraoCNAB,"
 			+  " NumeroRemessa ConvenioNumeroRemessa, "
-			+  " 'false' ConvenioReiniciarDiariamente, "
-			+  " co.IdIntegracao Conta "
+			+  " IF(cv.reinicia_remessa = 1, 'true', 'false') ConvenioReiniciarDiariamente, "
+			+  " co.IdIntegracao Conta, "
+			+  " cv.IdIntegracao IdIntegracao "
 			+  " FROM convenio cv "
 			+  " LEFT JOIN conta30i co ON co.sr_recno = cv.ContaId "
 			+  " WHERE cv.Id = :#${body[param1]}";
