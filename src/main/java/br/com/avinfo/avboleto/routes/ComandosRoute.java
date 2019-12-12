@@ -68,6 +68,20 @@ public class ComandosRoute extends RouteBuilder {
 	private void sendComandoRetorno() {
 		from("direct:send-comando-retorno")
 			.routeId("send-comando-retorno")
+			.multicast()
+				.to("direct:if-send-comando-retorno-sucesso")
+				.to("direct:if-send-comando-retorno-erro")
+			.end()
+			.to("direct:comando-fim")
+		.end();
+		
+		ifSendComandoSucesso();
+		ifSendComandoErro();
+	}
+	
+	private void ifSendComandoSucesso() {
+		from("direct:if-send-comando-retorno-sucesso")
+			.routeId("if-send-comando-retorno-sucesso")
 			.choice()
 				.when(simple("${body[_status]} == 'sucesso'"))
 					.log("status: ${body[_status]}, dados: ${body[_dados]}")
@@ -76,12 +90,20 @@ public class ComandosRoute extends RouteBuilder {
 						.when(header("comando-mensagem").isNull())
 							.setHeader("comando-mensagem", simple("${body}", String.class))
 					.endChoice()
-				.otherwise()
-					.log("status: erro, ${body}")
-					.setHeader("comando-status", constant(ComandoStatus.ERRO))  //erro
-					.setHeader("comando-mensagem", simple("erro: ${body}", String.class))
 			.end()
-			.to("direct:comando-fim")
+		.end();
+	}
+
+	private void ifSendComandoErro() {
+		from("direct:if-send-comando-retorno-erro")
+			.routeId("if-send-comando-retorno-erro")
+			.choice()
+			.when(simple("${body[_status]} != 'sucesso'"))
+				.log("status: erro, ${body}")
+				.setHeader("comando-status", constant(ComandoStatus.ERRO))  //erro
+				.setHeader("comando-mensagem", simple("erro: ${body}", String.class))
+			.endChoice()
+			.end()
 		.end();
 	}
 

@@ -22,14 +22,23 @@ public abstract class HttpBaseRouteBuilder extends BaseRouteBuilder {
 		return doRequest(from, "application/json", HttpMethods.POST, resource);
 	}
 
+	public ExpressionNode reqGetJson(String from, String resource) {
+		return doRequestRecipientList(from, null, HttpMethods.GET, resource);
+	}
+
 	public ExpressionNode reqPutJson(String from, String resource) {
 		return doRequestRecipientList(from, "application/json", HttpMethods.PUT, resource);
 	}
 
 	private RouteDefinition doRequest(String from, String contentType, Expression method, String resource) {
-		return fromF("direct:%s", from)
-				.routeId(from)
-				.setHeader(Exchange.CONTENT_TYPE, constant(contentType))
+		RouteDefinition routeDefinition = fromF("direct:%s", from)
+			.routeId(from);
+				
+		if (contentType != null) {
+			routeDefinition.setHeader(Exchange.CONTENT_TYPE, constant(contentType));
+		}
+			
+		return routeDefinition
 				.setHeader("cnpj-sh", simple("{{tecnosped.boleto.api.cnpjsh}}"))
 				.setHeader("token-sh", simple("{{tecnosped.boleto.api.tokensh}}"))
 				.setHeader("cnpj-cedente", method("avHeader", "getCNPJCedente"))
@@ -45,8 +54,14 @@ public abstract class HttpBaseRouteBuilder extends BaseRouteBuilder {
 	}
 
 	private ExpressionNode doRequestRecipientList(String from, String contentType, Expression method, String resource) {
-		return fromF("direct:%s", from)
-				.routeId(from)
+		RouteDefinition routeDefinition = fromF("direct:%s", from)
+				.routeId(from);
+		
+		if (contentType != null) {
+			routeDefinition.setHeader(Exchange.CONTENT_TYPE, constant(contentType));
+		}
+		
+		return routeDefinition
 				.setHeader(Exchange.CONTENT_TYPE, constant(contentType))
 				.setHeader("cnpj-sh", simple("{{tecnosped.boleto.api.cnpjsh}}"))
 				.setHeader("token-sh", simple("{{tecnosped.boleto.api.tokensh}}"))

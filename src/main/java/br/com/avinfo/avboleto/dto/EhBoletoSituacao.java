@@ -22,7 +22,11 @@ public enum EhBoletoSituacao {
 	
 	BAIXADO(9), 
 	
-	DESCARTADO(10);
+	DESCARTADO(10), 
+	
+	CONCILIADO(11), 
+	
+	NAO_CONCILIADOS(12);
 	
 	private int situacaoId;
 	

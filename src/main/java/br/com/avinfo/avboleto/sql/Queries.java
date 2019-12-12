@@ -23,7 +23,7 @@ public class Queries {
 			+ "   cc.numcon30        CedenteContaNumero        ,"      //retirar digito
 			+ "   cc.digcon30        CedenteContaNumeroDV      ,"      //pegar somente digito
 			+ "   cv.CodBeneficiario CedenteConvenioNumero     ,"
-			+ "   ban.cod40           CedenteContaCodigoBanco   ," 
+			+ "   ban.cod40          CedenteContaCodigoBanco   ," 
 			+ "   cli.cgcclie1       SacadoCPFCNPJ             ,"  
 			+ "   cli.eleclie1       SacadoEmail               ,"  
 			+ "   cli.numend01       SacadoEnderecoNumero      ,"  
@@ -156,5 +156,5 @@ public class Queries {
 			+  " FROM convenio cv "
 			+  " LEFT JOIN conta30i co ON co.sr_recno = cv.ContaId "
 			+  " WHERE cv.Id = :#${body[param1]}";
-	
+
 }
