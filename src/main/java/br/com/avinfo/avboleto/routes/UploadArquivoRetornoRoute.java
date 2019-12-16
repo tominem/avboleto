@@ -127,7 +127,7 @@ public class UploadArquivoRetornoRoute extends BoletoBaseRouteBuilder {
 							
 							ex.getIn().setBody(newBody);
 						})
-						.to("direct:consulta-boleto")
+						.to("direct:consulta-boleto-protocolo")
 				.endChoice()
 			.end();
 	}
