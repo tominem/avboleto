@@ -1,6 +1,8 @@
 package br.com.avinfo.avboleto.routes;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.camel.LoggingLevel;
@@ -9,7 +11,6 @@ import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.model.RouteDefinition;
 import org.springframework.stereotype.Component;
 
-import br.com.avinfo.avboleto.agregator.MapAggregationStrategy;
 import br.com.avinfo.avboleto.base.BoletoBaseRouteBuilder;
 import br.com.avinfo.avboleto.dto.EhBoletoSituacao;
 import br.com.avinfo.avboleto.processor.FileBase64ReaderProcessor;
@@ -100,9 +101,9 @@ public class UploadArquivoRetornoRoute extends BoletoBaseRouteBuilder {
 						.when(simple("${body[_status]} == 'sucesso' && ${body[_dados][titulosNaoConciliados].size()} > 0"))
 							.setProperty("situacaoId", constant(EhBoletoSituacao.NAO_CONCILIADOS.getSituacaoId()))
 							.setProperty("situacao", constant(EhBoletoSituacao.NAO_CONCILIADOS.name()))
-							.log(LoggingLevel.INFO, LOGGER, "Titulos Não-Conciliados: (${body[_dados][titulosNaoConciliados].size()}) encontrados")
+							.log(LoggingLevel.INFO, LOGGER, "Titulos Nao-Conciliados: (${body[_dados][titulosNaoConciliados].size()}) encontrados")
 							.split(simple("${body[_dados][titulosNaoConciliados]}"))
-								.log(LoggingLevel.INFO, LOGGER, " --> Numero-Documento[Não-Conciliado]=${body[TituloNumeroDocumento]}")
+								.log(LoggingLevel.INFO, LOGGER, " --> Numero-Documento[Nao-Conciliado]=${body[TituloNumeroDocumento]}")
 								.to("sql:UPDATE statusboleto SET situacao = :#${property.situacaoId}, descricao = :#${property.situacao} "
 										+ "WHERE id in (Select bol.id from boleto bol WHERE bol.NumeroBoleto = :#${body[TituloNumeroDocumento]})")
 							.end()
@@ -116,19 +117,26 @@ public class UploadArquivoRetornoRoute extends BoletoBaseRouteBuilder {
 				.routeId("consulta-status-conciliados")
 				.setProperty("situacaoId", constant(EhBoletoSituacao.CONCILIADO.getSituacaoId()))
 				.to("sql:" + Queries.FIND_IDS_INTEGRACAO_BOLETOS_BY_SITUACAO + "?dataSourceRef=dataSource")
-				.split(body(), new MapAggregationStrategy("id_integracao"))
-				.choice()
-					.when(body().isNotNull())
-						.process(ex -> {
-							String body = ex.getIn().getBody(String.class);
-							
-							Map<String, String> newBody = new HashMap<>();
-							newBody.put("param1", body);
-							
-							ex.getIn().setBody(newBody);
-						})
-						.to("direct:consulta-boleto-protocolo")
-				.endChoice()
+				.process(ex -> {
+					
+					List<String> ids = new ArrayList<>();
+					
+					@SuppressWarnings("unchecked")
+					List<Map<?,?>> results = ex.getIn().getBody(List.class);
+					if (results != null && results.size() > 0) {
+						for (Map<?, ?> map : results) {
+							String idIntegracao = map.get("id_integracao").toString();
+							ids.add(idIntegracao);
+						}
+					}
+					
+					Map<String, String> newBody = new HashMap<>();
+					newBody.put("param1", ids.isEmpty() ? null : String.join(",", ids));
+					
+					ex.getIn().setBody(newBody);
+					
+				})
+				.to("direct:consulta-boleto")
 			.end();
 	}
 

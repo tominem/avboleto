@@ -25,7 +25,7 @@ import org.springframework.test.context.ActiveProfiles;
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 @DisableJmx(true)
 @ActiveProfiles("test")
-public class ConsultaBoletoProtocoloRouteTest {
+public class ConsultaBoletoRouteTest {
 	
 	@Autowired
 	private CamelContext camelContext;
@@ -63,8 +63,9 @@ public class ConsultaBoletoProtocoloRouteTest {
 	public void shouldSucceed() throws Exception {
 		
 		Map<String, Object> contaParams = new HashMap<>();
-		contaParams.put("comando", "consulta-boleto-protocolo");
-		contaParams.put("param1", "M39_O2DWu");
+		contaParams.put("comando", "consulta-status-conciliados");
+		contaParams.put("param1", "");
+//		contaParams.put("param1", "HkZLEBoHTV");
 		contaParams.put("status", 1);
 		insereBoletoComando.sendBody(contaParams);
 		
