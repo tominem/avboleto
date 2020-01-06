@@ -121,6 +121,10 @@ public class Queries {
 			"INSERT"
 			+ " INTO remessa (nome_arquivo, arquivo) VALUES ( :#${body[arquivo]}, :#${body[remessa]} ) ";
 	
+	public static final String INSERT_REMESSA_BAIXA = 
+			"INSERT"
+			+ " INTO remessa (nome_arquivo, arquivo, tipo) VALUES ( :#${body[arquivo]}, :#${body[remessa]}, 1 ) ";
+	
 	public static final String UPDATE_STATUS_BOLETO_REMESSA = 
 			"UPDATE"
 			+ " statusboleto sb SET remessa_id = (SELECT rem.id FROM remessa rem WHERE rem.nome_arquivo = :#${body[arquivo]}) "

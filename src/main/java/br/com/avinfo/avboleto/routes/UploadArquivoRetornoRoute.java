@@ -35,7 +35,7 @@ public class UploadArquivoRetornoRoute extends BoletoBaseRouteBuilder {
 		uploadRetornoWS()
 			.multicast()
 				.to("direct:pega-protocolo-retorno")
-				.to("direct:if-send-comando-retorno-erro")
+				.to("direct:send-comando-retorno")
 		.end();
 				
 		pegaProtocoloRetorno();
